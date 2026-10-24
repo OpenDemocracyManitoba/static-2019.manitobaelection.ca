@@ -113,6 +113,16 @@ Only the external Font Awesome stylesheet keeps a `?ver=`. The transform only re
 
 **For the hosting phase:** 301 `?page=N` to `…/page/N/` (`N=1` → the bare path), and `/candidates/<slug>/<N>/` to `…/page/N/`. Query strings on assets need no rule.
 
+## External dependencies mirrored
+
+In Phase B of the olddroplet migration (R4, 2026-10-24), the stylesheets every page needs to render were copied into `site/_ext/` by `python3 -I mirror_deps.py 2019.manitobaelection.ca --apply`, and the pages now load the copies (root-relative links):
+
+* `https://use.fontawesome.com/releases/v5.1.1/css/all.css` → `/_ext/use.fontawesome.com/releases/v5.1.1/css/all.css` (779 HTML files), with its webfonts, byte-identical
+* `https://fonts.googleapis.com/css?family=Libre+Franklin%3A400%2C700` → `/_ext/fonts.googleapis.com/css/libre-franklin-400-700.css` (779 HTML files), with its `woff2` files; the CSS (fetched as a current Chrome) points at the copies under `/_ext/fonts.gstatic.com/`
+* the `dns-prefetch` hints for `fonts.googleapis.com` and `use.fontawesome.com` were removed (779 HTML files)
+
+Font Awesome Free is under the Font Awesome Free License (fonts SIL OFL 1.1, CSS MIT); Libre Franklin is under the SIL OFL 1.1. Other third-party scripts and embeds were left as they were.
+
 ## Secret scan
 
 The Phase A §7.2 scan was run over `site/` and found nothing. It checks for:
