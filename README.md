@@ -2,7 +2,8 @@
 
 Static HTML copy of **2019.manitobaelection.ca**, Open Democracy Manitoba's guide to the 2019 Manitoba provincial election. It ran on WordPress 5.9.7, with the ElectionData-V2 theme supplied by the ElectionData plugin. It was crawled from olddroplet (`odm-nginx-ruby-php-2018`, 159.203.24.194) on 2026-10-24, before the server was retired.
 
-* `site/` holds the crawl: 2,021 files in the raw crawl commit.
+* `site/` holds the crawl: 1,940 files, after the transform commit described below.
+* `transform.py` is the script that made the second commit.
 * `crawl.log.gz` holds the wget log.
 
 The WordPress source, the DB dump (`2020_manitobaelection`) and the nginx vhost are in the private repo `OpenDemocracyManitoba/archive-2019.manitobaelection.ca`.
@@ -66,7 +67,9 @@ The plugin moderates news, and only `approved` articles were ever shown. Of the 
 
 The candidate pages carry the theme's notice "Showing news articles published after June 1st 2019". That's only text: `get_news()` has no date filter.
 
-**Party pages.** The party template links its news pager as `?page=N`, but it reads WordPress's `paged` variable, so on the live site every `?page=N` showed page 1's news again. wget saved the two pages each pager linked (`?page=2` and the last page) for the 4 parties. Their news lists are the same as page 1. No news is lost, since every article is also on a candidate page.
+**Party pages.** The party template links its news pager as `?page=N`, but it reads WordPress's `paged` variable, so on the live site every `?page=N` showed page 1's news again. wget saved the two pages each pager linked (`?page=2` and the last page) for the 4 parties. Their news lists are the same as page 1. No news is lost, since every article is also on a candidate page. Owner decision, 2026-10-24: those copies are archived as is (now `parties/<slug>/page/N/`), but the transform removed the broken pager from every party page, so nothing links to them.
+
+**Feedback form removed.** `help-improve-manitobaelection-ca/`, linked from every page's footer, held a Forminator feedback form that posted to `admin-ajax.php`, which can't work on a static host. Owner decision, 2026-10-24: the transform replaced the form with the note "Feedback for this site closed after the 2019 election.", keeping the form's own text about Open Democracy Manitoba and Elections Manitoba but not its "Please use this form…" line. It also removed the Forminator stylesheet and script tags, and deleted `wp-content/plugins/forminator/` and `wp-content/uploads/forminator/` (12 files). The raw crawl commit still has them.
 
 **404s:** only `wp-content/themes/ElectionData/ElectionData-V2/ipad4/arrow.gif` and `arrowl.gif`, which are referenced by the theme CSS and missing on the live site too.
 
@@ -83,7 +86,32 @@ There were no references to `upcoming.manitobaelection.ca` (the DB's old `home`)
 
 ## Commits and URL mapping
 
+The repo has two commits:
+
 1. **Raw crawl.** `--restrict-file-names=windows` saved each URL's `?` as `@`.
+2. **Path-based URLs** (owner decision, 2026-10-24), made by `python3 -I transform.py 2019.manitobaelection.ca --apply`:
+
+|Old URL (live site)|Crawl file (commit 1)|Now|
+|-|-|-|
+|`/candidates/<slug>/?page=N#news`|`candidates/<slug>/index.html@page=N.html`|`candidates/<slug>/page/N/index.html` (454 files; 69 candidates)|
+|`/candidates/<slug>/?page=1#news`|`candidates/<slug>/index.html@page=1.html` (69 files)|dropped: identical to `candidates/<slug>/index.html`, apart from cache comments|
+|`/candidates/<slug>/<N>/` (canonical of a paged candidate page)|(crawler trap, not fetched)|canonicals now point at `…/page/N/` (454)|
+|`/parties/<slug>/?page=N#news`|`parties/<slug>/index.html@page=N.html`|`parties/<slug>/page/N/index.html` (8 files; 4 parties). Same news as page 1, see above.|
+|`<file>?ver=X`|`<file>@ver=X`, `<file>@ver=X.css`|`<file>` (10 files; no plain copy existed)|
+|Forminator assets, incl. `forminator-icons-font.<ext>?1.7.4`|`wp-content/{plugins,uploads}/forminator/…`|deleted (12 files), see "Feedback form removed"|
+
+The transform also rewrote the HTML:
+* 5,172 candidate pager links: `?page=N` → `page/N/`, keeping `#news`, and `?page=1` → the bare candidate path.
+* 24 party pager blocks removed (top and bottom of 12 party pages).
+* 6,355 cache-buster query strings stripped, including the JSON-escaped emoji-loader URL.
+* 700 `<link rel='shortlink'>` tags removed.
+* 1 Forminator form replaced by a note, and its asset tags removed.
+
+Only the external Font Awesome stylesheet keeps a `?ver=`. The transform only rewrites a link when its new target is in `site/`, and it never overwrites a file.
+
+**No `@` files are left.** An internal-link check finds **0 unresolved out of 59,850**. It covers every `https://2019.manitobaelection.ca/…`, root-relative or `url()` reference, ignores the blocked `/wp-json` and `xmlrpc.php` links, and counts `/foo` → `foo.html` as resolved.
+
+**For the hosting phase:** 301 `?page=N` to `…/page/N/` (`N=1` → the bare path), and `/candidates/<slug>/<N>/` to `…/page/N/`. Query strings on assets need no rule.
 
 ## Secret scan
 
