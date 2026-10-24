@@ -123,6 +123,18 @@ In Phase B of the olddroplet migration (R4, 2026-10-24), the stylesheets every p
 
 Font Awesome Free is under the Font Awesome Free License (fonts SIL OFL 1.1, CSS MIT); Libre Franklin is under the SIL OFL 1.1. Other third-party scripts and embeds were left as they were.
 
+## Analytics removed
+
+Google Tag Manager / Google Analytics (and the Google Ads tag that rides on `gtag.js`) were removed in Phase B of the olddroplet migration (owner decision D7, 2026-10-24) by `python3 -I strip_analytics.py 2019.manitobaelection.ca --apply`. Files changed: 779 HTML files. IDs: `UA-23791334-1`. Each loader went together with its inline block and the comment around it. Other third-party scripts (fonts, embeds, Jetpack stats) were left as they were.
+
+Snippet shapes removed (IDs and whitespace normalised):
+
+* 779 ×
+
+  ```html
+  <!-- BEGIN ExactMetrics v5.3.9 Universal Analytics - https://exactmetrics.com/ --> <script> (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){ (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o), m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m) })(window,document,'script','https://www.google-analytics.com/analytics.js','ga'); ga('create', '<ID>', 'auto'); ga('send', 'pageview'); </script> <!-- END ExactMetrics Universal Analytics -->
+  ```
+
 ## Secret scan
 
 The Phase A §7.2 scan was run over `site/` and found nothing. It checks for:
