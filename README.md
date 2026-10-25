@@ -141,7 +141,7 @@ Served from **Cloudflare Workers static assets** (Phase B of the olddroplet migr
 
 * **Worker:** `static-2019-manitobaelection-ca`, account `Stungeye@gmail.com's Account`.
 * **Deploy:** `npx wrangler@4.148.0 deploy` from the repo root. Only `site/` is uploaded.
-* **Routes:** none yet (preview only).
+* **Routes:** `2019.manitobaelection.ca/*` on zone `manitobaelection.ca`, over the existing proxied DNS record.
 * **workers.dev:** https://static-2019-manitobaelection-ca.stungeye.workers.dev. Per-version preview URLs are off (`preview_urls: false`).
 * **Serving:** `html_handling: auto-trailing-slash` (`/foo` serves `foo.html`, `/foo/` serves `foo/index.html`; the other forms 307 to those) and `not_found_handling: 404-page` (`site/404.html`, a minimal page added in Phase B).
 * **Worker script** (`worker.js`, runs only for `/candidates/*` and `/parties/*`): `?page=N` / `?pagenum=N` 301 to `…/page/N/` (`N` ≤ 1 → the bare path; other query parameters are dropped; a page past the end → the bare path), and `/candidates/<slug>/<N>/` 301s to `…/page/N/`. Everything else falls through to the assets.
